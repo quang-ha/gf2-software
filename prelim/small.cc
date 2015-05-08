@@ -4,15 +4,16 @@
 #include <cctype>
 using namespace std;
 
+// Define namestring
+const int maxlength = 8;
+typedef string namestring; 
+
 // Skipspaces functions
 void skipspaces(ifstream *infp, char &curch, bool &eofile)
 {
   while (!eofile)
   {
-    if (!isspace(curch))
-    {
-      break;
-    }
+    if (!isspace(curch)) break;
     eofile = (infp->get(curch) == 0); // get next character
   }
 }
@@ -26,7 +27,7 @@ bool isDigit(char chr)
     return false;
 }
 
-// Getnumber functions
+// Getnumber function
 void getnumber(ifstream *infp, char &curch, bool &eofile, int &number)
 {
   number = 0; 
@@ -36,9 +37,37 @@ void getnumber(ifstream *infp, char &curch, bool &eofile, int &number)
     {
       number = number*10 + (int)curch - 48;  
     }
-    else 
+    else break;
+    eofile = (infp->get(curch) == 0);
+  }
+}
+
+// Check if char is letter
+bool isLetter(char chr)
+{
+  if (((chr >= 'a') && (chr <= 'z')) or ((chr >='A') && (chr <= 'Z')))
+  {
+    return true;
+  }
+  else return false;
+}
+
+// Getname function
+void getname(ifstream *infp, char &curch, bool &eofile, namestring &str)
+{
+  str = "";
+  bool start = false;
+  while (!eofile)
+  {
+    if ((!start) && isLetter(curch))
     {
-      break;
+      start = true;
+      str+=curch; 
+    }
+    else
+    {
+      if ((isLetter(curch)) or (isDigit(curch))) str+=curch;
+      else break;
     }
     eofile = (infp->get(curch) == 0);
   }
@@ -63,8 +92,11 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  int number;
   eofile = (inf.get(ch) == 0);
+  namestring name; 
+  
+
+  int number;
   while (!eofile)
   {
     if (isspace(ch))
@@ -73,8 +105,21 @@ int main(int argc, char **argv)
     }
     else
     {
-      getnumber(&inf, ch, eofile, number);
-      cout << number << endl;
+      if (isDigit(ch))
+      {
+        getnumber(&inf, ch, eofile, number);
+        cout << number << endl;
+      }
+      if (isLetter(ch))
+      {
+        getname(&inf, ch, eofile, name);
+        if (name.length() > maxlength)
+        {
+          cout << "Warning: name '" << name << "' was truncated!" << endl;
+          cout << string(name.begin(), name.begin() + 8) << endl;
+        }
+        else cout << name << endl;
+      }
     }
   }
   
