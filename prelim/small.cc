@@ -2,11 +2,17 @@
 #include <fstream>
 #include <cstdlib>
 #include <cctype>
+#include <vector>
+#include <algorithm>
+
 using namespace std;
 
 // Define namestring
 const int maxlength = 8;
 typedef string namestring; 
+
+// Look-up table for name string
+vector<namestring> data; 
 
 // Skipspaces functions
 void skipspaces(ifstream *infp, char &curch, bool &eofile)
@@ -73,6 +79,24 @@ void getname(ifstream *infp, char &curch, bool &eofile, namestring &str)
   }
 }
 
+// Add lookup function, a very simple one
+// namestring lookup(namestring str)
+// {
+//   // search method is now just brute force,
+//   // to be replace with binary search
+//   bool found = false;
+//   index = string(str.begin(), str.begin()+8);
+//   for (int i; i<data.size(); i++)
+//   {
+//     if (data[i] == index)
+//     {
+//       found = true;
+//       break;
+//     }
+//   }
+//   if found = true; 
+// }
+
 int main(int argc, char **argv)
 // If this program is put in a file called small.cc, it cannot
 // be compiled with the command  g++ -g -o small small.cc
@@ -116,13 +140,28 @@ int main(int argc, char **argv)
         if (name.length() > maxlength)
         {
           cout << "Warning: name '" << name << "' was truncated!" << endl;
-          cout << string(name.begin(), name.begin() + 8) << endl;
+          name = (string(name.begin(), name.begin()+8));
+          //cout << string(name.begin(), name.begin() + 8) << endl;
         }
         else cout << name << endl;
+        data.push_back(name);
       }
     }
   }
-  
+  sort(data.begin(), data.end());
+  cout << "Print out entire data list:" << endl;
+  for (vector<namestring>::iterator it = data.begin(); it!=data.end(); it++)
+  {
+    cout << ' ' << *it << endl;
+  }
+
+  // Generate random string to test search function
+  namestring test = "CurrentY";
+  if (binary_search(data.begin(), data.end(), test))
+    cout << "found!\n";
+  else
+    cout << "not found!\n";
+
   inf.close();
 }
 
