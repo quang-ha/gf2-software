@@ -4,8 +4,48 @@
 #include <cctype>
 using namespace std;
 
+// Skipspaces functions
+void skipspaces(ifstream *infp, char &curch, bool &eofile)
+{
+  while (!eofile)
+  {
+    if (!isspace(curch))
+    {
+      break;
+    }
+    eofile = (infp->get(curch) == 0); // get next character
+  }
+}
+
+// Check if char is digit
+bool isDigit(char chr)
+{
+  if ((chr >= '0') && (chr <= '9'))
+    return true;
+  else
+    return false;
+}
+
+// Getnumber functions
+void getnumber(ifstream *infp, char &curch, bool &eofile, int &number)
+{
+  number = 0; 
+  while (!eofile)
+  {
+    if (isDigit(curch))
+    {
+      number = number*10 + (int)curch - 48;  
+    }
+    else 
+    {
+      break;
+    }
+    eofile = (infp->get(curch) == 0);
+  }
+}
+
 int main(int argc, char **argv)
-// If this program is put in a file called small.cc, it can
+// If this program is put in a file called small.cc, it cannot
 // be compiled with the command  g++ -g -o small small.cc
 {
   ifstream inf; // input file
@@ -23,13 +63,22 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  eofile = (inf.get(ch) == 0); // get first character
-
-  while (!eofile) {
-    if (isspace(ch)) cout << '.';
-    else cout << ch;
-    eofile = (inf.get(ch) == 0); // get next character
+  int number;
+  eofile = (inf.get(ch) == 0);
+  while (!eofile)
+  {
+    if (isspace(ch))
+    {
+      skipspaces(&inf, ch, eofile);
+    }
+    else
+    {
+      getnumber(&inf, ch, eofile, number);
+      cout << number << endl;
+    }
   }
-
+  
   inf.close();
 }
+
+
