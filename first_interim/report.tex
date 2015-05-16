@@ -1,6 +1,18 @@
-\documentclass[a4paper, 11pt]{article}
-\usepackage[top = 1.2in, bottom = 1.2in, left = 0.6in, right = 0.6in]{geometry}
+%% LyX 2.1.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[11pt]{article}
+\usepackage[utf8]{luainputenc}
+\usepackage[a4paper]{geometry}
+\geometry{verbose}
 \usepackage{amsmath}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \usepackage{graphics}
 \usepackage{graphicx}
 \usepackage{subcaption}
@@ -10,46 +22,140 @@
 \usepackage{url}
 \usepackage[labelfont=bf]{caption}
 
+\makeatother
+
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Listing}
+
 \begin{document}
-
 %%Title
-\Large
+
 \begin{center}
-\hrulefill \\
-\textbf{SOFTWARE} \\
-GF2 - FIRST INTERIM REPORT \\
-\vspace{0.2cm}
-\normalsize 
-SOFTWARE DESIGN TEAM 1 \\
-Quang-Thinh Ha - \textit{qth20}; Edgar Dakin - \textit{ed408}; Konstantinos Kyriakopoulos - \textit{kk492} \\
-\hrulefill \\
-\end{center}
+{\Large{}\hrulefill{}}\\
+{\Large{} }\textbf{\Large{}Software}{\Large{} }\\
+{\Large{} GF2 - First Interim Report }\\
+{\Large{} \vspace{0.2cm}
+ }SOFTWARE DESIGN TEAM 1 \\
+ Quang-Thinh Ha - \textit{qth20}; Edgar Dakin - \textit{ed408}; Konstantinos
+Kyriakopoulos - \textit{kk492} \\
+ \hrulefill{}\\
+ 
+\par\end{center}
 
-\normalsize
 
-\section{INTRODUCTION}
-The aim of this project is to develop a logic simulation program in C++. The project involves all five major phases of the software engineering life cycle: specification, design, implementation, testing and maintenance. \\
+
+
+\section{Introduction and General Approach}
+
+The aim of this project is to develop a logic simulation program in
+C++. The project involves all five major phases of the software engineering
+life cycle: specification, design, implementation, testing and maintenance. \\
 \noindent
-This report will include a general approach from the team, including teamwork planning and our agreed EBNF for syntax, along with analysing all possible semantic errors and errors handling.
+This report will include a general approach from the team, including
+teamwork planning and our agreed EBNF for syntax, along with analysing
+all possible semantic errors and errors handling. \\
+\noindent
+The system is named Elea, after the Ancient Greek colony of Ἐλέα, home to early logicians such as Parmenides and Zeno.
 
-\section{TEAMWORK PLANNING}
-The following tasks have been allocated to the members of the team, with their corresponding deadlines for the remaining allowance time of the project. 
+
+\section{Teamwork Planning}
+
+\noindent The following tasks have been allocated to the members of
+the team, with their corresponding deadlines for the remaining allowance
+time of the project.
 
 \begin{center}
-\begin{tabular}{l l l}
-\textbf{Week} & \textbf{Member} &  \textbf{Activity} \\
-\textit{2} & Edgar (E) & Semantic analysis and error handling. \\
-{} &  Konstantinos (K) & Finalise EBNF for syntax. \\
-{} & Quang (Q) & Start GUI design. \\
-\textit{3} & E and K & Design and implement \texttt{names, scanner, parser classes}.\\
-{} & Q & Design and implement \texttt{gui classes}\\
-\textit{4} & E, K and Q & Integration and final testing. \\
-{} & {} & Maintenance. \\
-\end{tabular} 
-\end{center}
+\begin{tabular}{lll}
+\textbf{Week}  & \textbf{Member}  & \textbf{Activity} \tabularnewline
+\textit{2}  & Edgar (E)  & Semantic analysis and error handling. \tabularnewline
+ & Konstantinos (K)  & Finalise EBNF for syntax. \tabularnewline
+  & Quang (Q)  & Start GUI design. \tabularnewline
+\textit{3}  & E and K  & Design and implement \texttt{names, scanner, parser classes}.\tabularnewline
+  & Q  & Design and implement \texttt{gui classes}\tabularnewline
+\textit{4}  & E, K and Q  & Integration and final testing. \tabularnewline
+  &   & Maintenance. \tabularnewline
+\end{tabular}
+\par\end{center}
 
-\section{EBNF FORM}
 
-\section{SEMANTIC ERRORS AND HANDLING}
+\section{Language Description}
 
+
+\subsection{Syntax}
+
+The circuit description language, named Nyaya\footnote{from the Sanskrit word न्याय meaning logic},
+is to consist of 5 high level commands, each beginning with an identifying
+keyword and terminating in a semi-colon, for robust LL(1) parsing.
+\begin{description}
+\item [{CREATE:}] Defines and names the individual devices in the circuit,
+specifying relevant parameters for each one. A single CREATE statement
+can create multiple devices, delimiting devices of the same type by
+commas and different types by ampersands. The declaration of each
+device is reminiscent of constructors in object-oriented programming
+languages, taking the form $type\, name\,(comma-delimited\, parameters)$.
+\item [{CONNECT:}] Creates a connection between an output pin and an input
+pin.
+\item [{DEFINE:}] Defines a new type of device containing instances of
+previously defined types, added using CREATE and connected using CONNECT,
+and accepting specified parameters, which can be passed to the internal
+devices. Pins of the internal devices are selected as inputs and outputs
+of the new device.
+\item [{MONITOR:}] Specifies output pins to be monitored.
+\item [{INCLUDE:}] Links to a library file containing additional DEFINE
+commands to be parsed before parsing the rest of the current file.
+\end{description}
+The complete syntax of Nyaya in EBNF follows below.
+
+\begin{lstlisting}
+nyayagrammar = { include | create | connect | define | monitor };
+libgrammar = { define };
+include = "INCLUDE", lib, ";";
+create = "CREATE", typecreate, {"&", typecreate}, ";";
+typecreate = type, init, {",", init};  
+init = name, "(", [ param, {",", param} ], ")";
+param = int_param | ref_param;
+connect = "CONNECT", in, "->", out, ";";
+in = device, [".", input]; out = device, [".", output];
+define = "DEFINE", new_type, "(", [param_name, {",", param_name, }, ")", "{", create, { create | connect }, inputs, outputs }, "}";
+inputs = "INPUT", increate, {"," , increate}; outputs = "OUTPUT", outcreate, {"," , outcreate};
+increate = in_name, "=", in; outcreate = out_name, "=", out;
+monitor = "MONITOR", out, {"," , out};
+\end{lstlisting}
+
+
+
+\subsection{Semantics}
+
+The following semantic constraints apply to the language and must
+be validated when a Nyaya file is read in. 
+\begin{itemize}
+\item \textit{lib} must point to a file which is a valid libgrammar
+\item \textit{type} must correspond to the name of a primitive type or a
+type previously defined
+\item \textit{name} must be an alphanumeric string that is not already the
+name of a device in the current context (ie. within a given define
+or outside defines)
+\item the number of \textit{param} in init must equal that required by the
+type
+\item \textit{int\_param }must be an integer which satisfies the validation
+required by the type \textit{ref\_param }must correspond to one of
+the \textit{param\_names }within the current define statement
+\item \textit{device} must be the name of one of the devices previously
+created within the current context (ie. within a given DEFINE or outside
+DEFINEs) input must be present unless the device has exactly one input
+input must be one of the input names for that device (eg. I1, I3,
+data, clock) output must be present unless the device has exactly
+one output output must be one of the output names for that device
+(e.g. Q, Qbar)
+\item \textit{new\_type} must be an alphanumeric string that is not already
+the name of a primitive type or a type previously defined \textit{param\_name}
+must be an alphanumeric string that does not correspond to a previous
+\textit{param\_name }in the same define
+\item \textit{in\_name }must be an alphanumeric string that does not correspond
+to a previous \textit{in\_name}
+\item \textit{out\_name} must be an alphanumeric string that does not correspond
+to a previous \textit{out\_name}
+\end{itemize}
+
+\section{Semantic Errors and Handling}
 \end{document}
